@@ -1,0 +1,13 @@
+ROSTemplateFormatVersion: '2015-09-01'
+Transform: Aliyun::Serverless-2018-04-03
+Resources:
+  kgl:
+    Type: Aliyun::Serverless::Service
+    kgl:
+      Type: Aliyun::Serverless::Function
+      Properties:
+        Handler: example.App::handleRequest
+        Runtime: java8
+        MemorySize: 512.0
+        CodeUri: .\lib\java-1.0-SNAPSHOT.jar
+        Timeout: 60.0

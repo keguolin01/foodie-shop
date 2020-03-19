@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ikgl.mapper.ItemsCommentsCustom" >
+
+  <select id="getCommentByItemIdAndLevel" resultType="com.ikgl.pojo.vo.ItemCommentVO">
+    SELECT
+    	ic.content as content,
+    	ic.sepc_name as specName,
+    	ic.created_time as createTime,
+    	u.nickname as nickName,
+    	u.face as userFace,
+    	ic.comment_level as commentLevel
+    FROM
+    	items_comments ic
+    LEFT JOIN users u ON ic.user_id = u.id
+    where ic.item_id = #{itemId}
+    <if test="level != null and level !=''">
+    AND ic.comment_level = #{level}
+    </if>
+  </select>
+
+  <select id="searchItemByKeywords" parameterType="map" resultType="com.ikgl.pojo.vo.SearchItemsVO">
+    SELECT
+	i.item_name AS itemName,
+	i.id AS itemId,
+	i.sell_counts AS sellCounts,
+	ii.url AS imgUrl,
+	temp.price as price
+    FROM
+	items i
+    LEFT JOIN items_img ii ON i.id = ii.item_id
+    LEFT JOIN (
+	SELECT
+		v.item_id,
+		MIN(v.price_discount) AS price
+	FROM
+		items_spec v
+	GROUP BY
+		v.item_id
+    ) temp ON temp.item_id = i.id
+    WHERE
+	ii.is_main = 1
+	<if test="paramsMap.keywords!=null and paramsMap.keywords!=''">
+        and i.item_name like concat('%',#{paramsMap.keywords},'%')
+    </if>
+    order by
+    <choose>
+        <when test="paramsMap.sort == &quot;c&quot;">
+            i.sell_counts desc
+        </when>
+        <when test="paramsMap.sort == &quot;p&quot;">
+            temp.price asc
+        </when>
+        <otherwise>
+            i.item_name asc
+        </otherwise>
+    </choose>
+  </select>
+
+    <select id="searchItemByCatId" parameterType="map" resultType="com.ikgl.pojo.vo.SearchItemsVO">
+        SELECT
+        i.item_name AS itemName,
+        i.id AS itemId,
+        i.sell_counts AS sellCounts,
+        ii.url AS imgUrl,
+        temp.price as price
+        FROM
+        items i
+        LEFT JOIN items_img ii ON i.id = ii.item_id
+        LEFT JOIN (
+        SELECT
+        v.item_id,
+        MIN(v.price_discount) AS price
+        FROM
+        items_spec v
+        GROUP BY
+        v.item_id
+        ) temp ON temp.item_id = i.id
+        WHERE
+        ii.is_main = 1
+        and i.cat_id = #{paramsMap.catId}
+        order by
+        <choose>
+            <when test="paramsMap.sort == &quot;c&quot;">
+                i.sell_counts desc
+            </when>
+            <when test="paramsMap.sort == &quot;p&quot;">
+                temp.price asc
+            </when>
+            <otherwise>
+                i.item_name asc
+            </otherwise>
+        </choose>
+    </select>
+</mapper>

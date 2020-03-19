@@ -1,0 +1,26 @@
+server:
+ port: 8088
+
+spring:
+ datasource:
+  url: jdbc:mysql://localhost:3306/foodie-shop?useUnicode=true&characterEncoding=UTF-8&autoReconnect # mysql驱动
+  password: root
+ redis:
+   host: 47.98.138.56
+   password: imooc
+   database: 1
+   port: 6379
+   #哨兵模式 未实现  服务器不够
+#   sentinel:
+#     master: imooc-master
+#     nodes: 47.98.138.56:26379,47.115.4.78:26379
+  #集群模式 未实现  服务器不够 三主三从 slot节点
+#  cluster:
+#    nodes: 47.98.138.56:26379,47.115.4.78:26379
+
+
+mybatis:
+ configuration:
+   log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+

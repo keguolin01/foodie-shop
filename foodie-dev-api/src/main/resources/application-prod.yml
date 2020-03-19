@@ -1,0 +1,8 @@
+server:
+ port: 8088
+
+#可以尝试一下内网ip
+spring:
+ datasource:
+  url: jdbc:mysql://47.98.138.56:3306/food-shop-dev?useUnicode=true&characterEncoding=UTF-8&autoReconnect # mysql驱动
+  password: kgl19960702.

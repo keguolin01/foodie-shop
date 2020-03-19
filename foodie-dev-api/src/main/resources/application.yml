@@ -1,0 +1,42 @@
+############################################################ ## 配置数据源信息 #############################################################
+spring:
+ profiles:
+  active: dev
+ datasource:
+  type: com.zaxxer.hikari.HikariDataSource # 数据源类型：HikariCP
+  driver-class-name: com.mysql.jdbc.Driver # 数据源类型：HikariCP
+#  url: jdbc:mysql://localhost:3306/foodie-shop?useUnicode=true&characterEncoding=UTF-8&autoReconnect # mysql驱动
+  username: root
+#  password: root
+ session:
+   store-type: redis
+ hikari:
+    connection-timeout: 30000 # 等待连接池分配连接的最大时长（毫秒），超过这个时长还没可用的连接则发生SQ
+    minimum-idle: 5 # 最小连接数
+    maximum-pool-size: 20 # 最大连接数
+    auto-commit: true # 自动提交
+    idle-timeout: 600000 # 连接超时的最大时长（毫秒），超时则被释放（retired），默认:10分钟
+    pool-name: DateSourceHikariCP # 连接池名字
+    max-lifetime: 1800000 # 连接的生命时长（毫秒），超时而且没被使用则被释放（retired），默认:30分钟
+    connection-test-query: SELECT 1
+mybatis:
+ type-aliases-package: com.ikgl.pojo # 所有POJO类所在包路径
+ mapper-locations: classpath:mapper/*.xml # mapper映射文件
+# configuration:
+#   log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+server:
+# port: 8088
+ tomcat:
+   uri-encoding: UTF-8
+ max-http-header-size: 80KB
+
+########################################################### ## mybatis mapper 配置 #############################################################
+# 通用 Mapper 配置
+mapper:
+ mappers: com.ikgl.my.mapper.MyMapper
+ not-empty: false #insert和update中，是否判断字符串类型!=''，少数方法会用到
+ identity: MYSQL
+# 分页插件配置
+pagehelper:
+ helperDialect: mysql
+ supportMethodsArguments: true
