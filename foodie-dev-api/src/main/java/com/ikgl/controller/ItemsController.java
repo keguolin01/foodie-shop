@@ -6,6 +6,7 @@ import com.ikgl.pojo.ItemsParam;
 import com.ikgl.pojo.ItemsSpec;
 import com.ikgl.pojo.vo.CommentLevelCountsVO;
 import com.ikgl.pojo.vo.ItemInfoVO;
+import com.ikgl.pojo.vo.ShopCartVO;
 import com.ikgl.service.ItemService;
 import com.ikgl.utils.IMOOCJSONResult;
 import com.ikgl.utils.PagedGridResult;
@@ -14,8 +15,10 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 
 @Api(value = "商品",tags = "商品详情的接口")
@@ -123,5 +126,16 @@ public class ItemsController extends BaseController {
         }
         PagedGridResult pagedGridResult = itemService.searchItemByCatId(catId, sort, page, pageSize);
         return IMOOCJSONResult.ok(pagedGridResult);
+    }
+
+    @ApiOperation(value = "根据商品规格ids查询规格商品的信息",notes = "根据商品规格ids查询规格商品的信息",httpMethod = "GET")
+    @GetMapping("refresh")
+    public IMOOCJSONResult catItems(@ApiParam(name = "itemSpecIds",value = "类别id",required = true,example = "1001,2002")
+                                    @RequestParam String itemSpecIds){
+        if(StringUtils.isBlank(itemSpecIds)){
+            return IMOOCJSONResult.ok();
+        }
+        List<ShopCartVO> shopCartVOS = itemService.queryItemsBySpecIds(itemSpecIds);
+        return IMOOCJSONResult.ok(shopCartVOS);
     }
 }

@@ -2,7 +2,6 @@ package com.ikgl.service.impl;
 
 import com.ikgl.mapper.CarouselMapper;
 import com.ikgl.pojo.Carousel;
-import com.ikgl.pojo.Users;
 import com.ikgl.service.CarouselService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -102,6 +102,9 @@ public class UsersController {
         }
         //设置cookie
         CookieUtils.setCookie(request,response,"user", JsonUtils.objectToJson(user),true);
+        //TODO 生成用户token 存入redis会话
+        //TODO 同步购物车数据
+
         return IMOOCJSONResult.ok(user);
     }
 

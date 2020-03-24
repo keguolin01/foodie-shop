@@ -6,7 +6,9 @@ import com.ikgl.pojo.ItemsImg;
 import com.ikgl.pojo.ItemsParam;
 import com.ikgl.pojo.ItemsSpec;
 import com.ikgl.pojo.vo.CommentLevelCountsVO;
+import com.ikgl.pojo.vo.ShopCartVO;
 import com.ikgl.utils.PagedGridResult;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -64,5 +66,20 @@ public interface ItemService {
      */
     public PagedGridResult searchItemByKeywords(String keywords,String sort,Integer page,Integer pageSize);
 
+    /**
+     * 查询类别下的所有商品 分页
+     * @param catId
+     * @param sort
+     * @param page
+     * @param pageSize
+     * @return
+     */
     public PagedGridResult searchItemByCatId(String catId, String sort, Integer page, Integer pageSize);
+
+    /**
+     * 加入购物车时展示购物车内容 根据规格id查询
+     * @param specIds
+     * @return
+     */
+    public List<ShopCartVO> queryItemsBySpecIds(String specIds);
 }

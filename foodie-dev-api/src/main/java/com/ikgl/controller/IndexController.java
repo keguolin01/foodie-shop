@@ -3,28 +3,22 @@ package com.ikgl.controller;
 import com.ikgl.enums.YesOrNo;
 import com.ikgl.pojo.Carousel;
 import com.ikgl.pojo.Category;
-import com.ikgl.pojo.Users;
-import com.ikgl.pojo.bo.UserBO;
 import com.ikgl.pojo.vo.CategoryVO;
 import com.ikgl.pojo.vo.NewItemsVO;
 import com.ikgl.service.CarouselService;
 import com.ikgl.service.CategoryService;
-import com.ikgl.service.UsersService;
-import com.ikgl.utils.CookieUtils;
 import com.ikgl.utils.IMOOCJSONResult;
-import com.ikgl.utils.JsonUtils;
-import com.ikgl.utils.MD5Utils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.Collections;
 import java.util.List;
 
 @Api(value = "首页",tags = "首页展示的相关接口")

@@ -7,6 +7,7 @@ import com.ikgl.pojo.*;
 import com.ikgl.pojo.vo.CommentLevelCountsVO;
 import com.ikgl.pojo.vo.ItemCommentVO;
 import com.ikgl.pojo.vo.SearchItemsVO;
+import com.ikgl.pojo.vo.ShopCartVO;
 import com.ikgl.service.ItemService;
 import com.ikgl.utils.DesensitizationUtil;
 import com.ikgl.utils.PagedGridResult;
@@ -14,9 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class ItemServiceImpl implements ItemService {
@@ -37,7 +36,7 @@ public class ItemServiceImpl implements ItemService {
     private ItemsCommentsMapper itemsCommentsMapper;
 
     @Autowired
-    private ItemsCommentsCustom itemsCommentsCustom;
+    private ItemsMapperCustom itemsMapperCustom;
 
 
     @Override
@@ -86,7 +85,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public PagedGridResult getCommentByItemIdAndLevel(String itemId, Integer level,Integer page,Integer pageSize) {
         PageHelper.startPage(page,pageSize);
-        List<ItemCommentVO> list = itemsCommentsCustom.getCommentByItemIdAndLevel(itemId, level);
+        List<ItemCommentVO> list = itemsMapperCustom.getCommentByItemIdAndLevel(itemId, level);
         for(ItemCommentVO vo : list){
             vo.setNickname(DesensitizationUtil.commonDisplay(vo.getNickname()));
         }
@@ -100,7 +99,7 @@ public class ItemServiceImpl implements ItemService {
         Map<String,Object> map = new HashMap<>();
         map.put("catId",catId);
         map.put("sort",sort);
-        List<SearchItemsVO> list = itemsCommentsCustom.searchItemByCatId(map);
+        List<SearchItemsVO> list = itemsMapperCustom.searchItemByCatId(map);
         PagedGridResult pagedGridResult = PagedGridResult.setPagedGridResult(list, page);
         return pagedGridResult;
     }
@@ -111,9 +110,18 @@ public class ItemServiceImpl implements ItemService {
         Map<String,Object> map = new HashMap<>();
         map.put("keywords",keywords);
         map.put("sort",sort);
-        List<SearchItemsVO> list = itemsCommentsCustom.searchItemByKeywords(map);
+        List<SearchItemsVO> list = itemsMapperCustom.searchItemByKeywords(map);
         PagedGridResult pagedGridResult = PagedGridResult.setPagedGridResult(list, page);
         return pagedGridResult;
+    }
+
+    @Override
+    public List<ShopCartVO> queryItemsBySpecIds(String specIds) {
+        List<String> specIdsList =new ArrayList<>();
+//        String[] ids = specIds.split(",");
+//        Collections.addAll(specIdsList,ids);
+        //此做法不大合适 但也是可以 详情看xml
+        return itemsMapperCustom.queryItemsBySpecIds(specIds);
     }
 
     public Integer getCommentCounts(String itemId,Integer level){

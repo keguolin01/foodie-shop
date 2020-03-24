@@ -12,7 +12,7 @@
     <artifactId>foodie-dev-api</artifactId>
 
     <!--[1] 打war包-->
-    <!--<packaging>war</packaging>-->
+<!--    <packaging>war</packaging>-->
     <dependencies>
         <!-- 可以引用common的方法
            api -> service -> mapper -> pojo ->common
