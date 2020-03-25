@@ -154,16 +154,16 @@
     </dependency>
 
         <!--引入日志依赖 抽象层 与 实现层-->
-<!--        <dependency>-->
-<!--        <groupId>org.slf4j</groupId>-->
-<!--        <artifactId>slf4j-api</artifactId>-->
-<!--        <version>1.7.21</version>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--        <groupId>org.slf4j</groupId>-->
-<!--        <artifactId>slf4j-log4j12</artifactId>-->
-<!--        <version>1.7.26</version>-->
-<!--        </dependency>-->
+        <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>1.7.21</version>
+        </dependency>
+        <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-log4j12</artifactId>
+        <version>1.7.26</version>
+        </dependency>
 
         <!--[3] 打war包 添加依赖 因为移除tomcat内置的servlet-->
         <dependency>
@@ -171,6 +171,19 @@
             <artifactId>javax.servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
+
+        <!--导入http模块-->
+<!--        <dependency>-->
+<!--            <groupId>org.apache.httpcomponents</groupId>-->
+<!--            <artifactId>httpcore</artifactId>-->
+<!--            <version>4.4.10</version>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.apache.httpcomponents</groupId>-->
+<!--            <artifactId>httpclient</artifactId>-->
+<!--            <version>4.5.6</version>-->
+<!--        </dependency>-->
+
 
         <dependency>
             <groupId>org.springframework.session</groupId>

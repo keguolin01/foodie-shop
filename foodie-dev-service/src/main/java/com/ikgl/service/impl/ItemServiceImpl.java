@@ -2,6 +2,7 @@ package com.ikgl.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.ikgl.enums.CommentLevel;
+import com.ikgl.enums.YesOrNo;
 import com.ikgl.mapper.*;
 import com.ikgl.pojo.*;
 import com.ikgl.pojo.vo.CommentLevelCountsVO;
@@ -13,6 +14,7 @@ import com.ikgl.utils.DesensitizationUtil;
 import com.ikgl.utils.PagedGridResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.*;
@@ -122,6 +124,30 @@ public class ItemServiceImpl implements ItemService {
 //        Collections.addAll(specIdsList,ids);
         //此做法不大合适 但也是可以 详情看xml
         return itemsMapperCustom.queryItemsBySpecIds(specIds);
+    }
+
+    @Override
+    public ItemsSpec getItemsSpecBySpecId(String specId) {
+        return itemsSpecMapper.selectByPrimaryKey(specId);
+    }
+
+    @Override
+    public String queryItemMainImgUrl(String itemId) {
+        ItemsImg itemsImg = new ItemsImg();
+        itemsImg.setItemId(itemId);
+        itemsImg.setIsMain(YesOrNo.YES.type);
+        ItemsImg itemsImg1 = itemsImgMapper.selectOne(itemsImg);
+        return itemsImg1 == null ? "":itemsImg1.getUrl();
+    }
+
+    @Transactional
+    @Override
+    public int decreaseItemSpecStock(String specId, int buyCount) {
+        int result = itemsMapperCustom.decreaseItemSpecStock(specId,buyCount);
+        if(result != 1){
+            throw new RuntimeException("创建订单失败，商品库存不足");
+        }
+        return result;
     }
 
     public Integer getCommentCounts(String itemId,Integer level){
