@@ -15,5 +15,5 @@ public class BaseController {
     // 微信支付成功 -> 支付中心 -> 天天吃货平台
     //                       |-> 回调通知的url
     //内网穿透这个会变 需要更换哦！
-    String payReturnUrl = "http://gxjs2w.natappfree.cc/orders/notifyMerchantOrderPaid";
+    String payReturnUrl = "http://mq6xt3.natappfree.cc/orders/notifyMerchantOrderPaid";
 }

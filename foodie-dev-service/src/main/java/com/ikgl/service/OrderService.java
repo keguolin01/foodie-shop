@@ -24,4 +24,6 @@ public interface OrderService {
      * @return
      */
     OrderStatus queryOrderStatusInfo(String orderId);
+
+    void closeOrder();
 }

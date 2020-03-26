@@ -2,6 +2,7 @@ package com.ikgl.service.impl;
 
 import com.ikgl.enums.OrderStatusEnum;
 import com.ikgl.enums.YesOrNo;
+import com.ikgl.mapper.ItemsSpecMapper;
 import com.ikgl.mapper.OrderItemsMapper;
 import com.ikgl.mapper.OrderStatusMapper;
 import com.ikgl.mapper.OrdersMapper;
@@ -12,6 +13,7 @@ import com.ikgl.pojo.vo.OrderVO;
 import com.ikgl.service.AddressService;
 import com.ikgl.service.ItemService;
 import com.ikgl.service.OrderService;
+import com.ikgl.utils.DateUtil;
 import org.aspectj.weaver.ast.Or;
 import org.n3r.idworker.Sid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -40,6 +43,10 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private OrderStatusMapper orderStatusMapper;
+
+    @Autowired
+    private ItemsSpecMapper itemsSpecMapper;
+
 
     @Transactional
     @Override
@@ -140,5 +147,48 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderStatus queryOrderStatusInfo(String orderId) {
         return orderStatusMapper.selectByPrimaryKey(orderId);
+    }
+
+    @Transactional
+    @Override
+    public void closeOrder() {
+        //1.查询出订单状态表中 1天内未付款的用户
+        OrderStatus os = new OrderStatus();
+        os.setOrderStatus(OrderStatusEnum.WAIT_PAY.type);
+        List<OrderStatus> orderStatuses = orderStatusMapper.select(os);
+        for(OrderStatus orderStatus : orderStatuses){
+            Date createdTime = orderStatus.getCreatedTime();
+            Date currentTime = new Date();
+            int daysBetween = DateUtil.daysBetween(createdTime, currentTime);
+            if(daysBetween >= 1){
+                updateOrder(orderStatus.getOrderId());
+            }
+        }
+    }
+
+    /**
+     * 根据订单id 定时任务修改订单状态为交易取消
+     */
+    private void updateOrder(String orderId){
+        //1.订单状态表状态修改
+        OrderStatus os = new OrderStatus();
+        os.setOrderId(orderId);
+        os.setOrderStatus(OrderStatusEnum.CLOSE.type);
+        orderStatusMapper.updateByPrimaryKeySelective(os);
+        //2.查询订单中下单的商品
+        OrderItems orderItems = new OrderItems();
+        orderItems.setOrderId(orderId);
+        List<OrderItems> oi = orderItemsMapper.select(orderItems);
+        for(OrderItems orderItem : oi){
+            //3.获取他的规格id
+            int buyCounts = orderItem.getBuyCounts();
+            String itemSpecId = orderItem.getItemSpecId();
+            //4.去查询他的库存 更新库存
+            ItemsSpec itemsSpec = itemsSpecMapper.selectByPrimaryKey(itemSpecId);
+            //5.库存加上取消订单的数量
+            int count =  itemsSpec.getStock() + buyCounts;
+            itemsSpec.setStock(count);
+            itemsSpecMapper.updateByPrimaryKey(itemsSpec);
+        }
     }
 }
