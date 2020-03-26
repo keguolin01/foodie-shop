@@ -40,4 +40,14 @@ public class CenterUsersServiceImpl implements CenterUsersService {
         return queryUserInfo(userId);
     }
 
+    @Override
+    public Users updateUserFaceUrl(String userId, String faceUrl) {
+        Users user = new Users();
+        user.setId(userId);
+        user.setUpdatedTime(new Date());
+        user.setFace(faceUrl);
+        usersMapper.updateByPrimaryKeySelective(user);
+        return queryUserInfo(userId);
+    }
+
 }

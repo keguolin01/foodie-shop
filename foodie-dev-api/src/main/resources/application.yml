@@ -10,6 +10,10 @@ spring:
 #  password: root
  session:
    store-type: redis
+ servlet:
+   multipart:
+     max-file-size: 204800      #文件上传大小限制为500kb  500*1024
+     max-request-size: 204800   #请求大小限制为500kb     500*1024
  hikari:
     connection-timeout: 30000 # 等待连接池分配连接的最大时长（毫秒），超过这个时长还没可用的连接则发生SQ
     minimum-idle: 5 # 最小连接数

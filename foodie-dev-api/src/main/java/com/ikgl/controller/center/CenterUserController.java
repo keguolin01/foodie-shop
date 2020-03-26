@@ -3,8 +3,10 @@ package com.ikgl.controller.center;
 import com.ikgl.controller.BaseController;
 import com.ikgl.pojo.Users;
 import com.ikgl.pojo.bo.center.CenterUserBO;
+import com.ikgl.resource.FileUpLoad;
 import com.ikgl.service.center.CenterUsersService;
 import com.ikgl.utils.CookieUtils;
+import com.ikgl.utils.DateUtil;
 import com.ikgl.utils.IMOOCJSONResult;
 import com.ikgl.utils.JsonUtils;
 import io.swagger.annotations.ApiOperation;
@@ -36,6 +38,9 @@ public class CenterUserController extends BaseController {
     @Autowired
     private CenterUsersService centerUsersService;
 
+    @Autowired
+    private FileUpLoad fileUpLoad;
+
     @ApiOperation(value = "查询用户信息",notes = "查询用户信息",httpMethod = "POST")
     @PostMapping("update")
     public IMOOCJSONResult update(
@@ -50,6 +55,7 @@ public class CenterUserController extends BaseController {
             return IMOOCJSONResult.errorMap(map);
         }
         Users users = centerUsersService.updateUserInfo(userId, centerUserBO);
+        //TODO 后续会改，增加令牌token 整合redis
         CookieUtils.setCookie(request,response,"user", JsonUtils.objectToJson(users),true);
         return IMOOCJSONResult.ok();
     }
@@ -60,6 +66,7 @@ public class CenterUserController extends BaseController {
             @ApiParam(value = "用户id",name = "userId",required = true)
                     @RequestParam String userId,
                      MultipartFile file,
+            HttpServletRequest request,
             HttpServletResponse response){
         FileOutputStream fos = null;
         if(file == null){
@@ -67,13 +74,20 @@ public class CenterUserController extends BaseController {
         }
         //1.文件名
         String fileName = file.getOriginalFilename();
-        String filePath = IMAGE_USER_FACE_LOCATION;
+//        String filePath = IMAGE_USER_FACE_LOCATION;
+        String filePath = fileUpLoad.getImageUserFaceLocation();
         String uploadPathPrefix = File.separator + userId;
         //2.进行文件名称的重组
         if(StringUtils.isNotBlank(fileName)){
             try {
                 String fileNameArr[] = fileName.split("\\.");
                 String suffix = fileNameArr[fileNameArr.length -1];
+                //对图片格式进行判断
+                if(!suffix.equalsIgnoreCase("jpg")
+                && !suffix.equalsIgnoreCase("jpeg")
+                && !suffix.equalsIgnoreCase("png")){
+                    return IMOOCJSONResult.errorMsg("图片格式不正确");
+                }
                 Long current = new Date().getTime();
                 //3.新的文件名
                 String newFileName = "face-" + userId + current + "." + suffix;
@@ -81,11 +95,14 @@ public class CenterUserController extends BaseController {
                 //文件保存路径
                 String outPath = filePath + uploadPathPrefix + File.separator
                         + newFileName;
+
+                //用于更新数据库用户头像的url 全局变量
+                uploadPathPrefix += File.separator + newFileName;
                 //判断文件夹是否存在
                File outFile = new File(outPath);
                System.out.println(outFile.getParentFile());
                if(!outFile.getParentFile().exists()){
-                   //如果此文件夹中没有文件
+                   //如果此文件夹中没有文件 这样不会对文件进行覆盖 旧的记录也会存在
                     outFile.getParentFile().mkdirs();
                }
                 InputStream inputStream = file.getInputStream();
@@ -108,6 +125,18 @@ public class CenterUserController extends BaseController {
                     e.printStackTrace();
                 }
             }
+            //更新信息到数据库
+            //1.更新用户信息faceUrl
+            //由于浏览器会存在缓存
+            //假如url相同的话，浏览器会从本地缓存先读取，那么这样就刷新及木有用处。
+            //而加了随机数相当于每次url都不相同，会从服务器重新取得。
+            String faceUrl = fileUpLoad.getImageServerUrl() + uploadPathPrefix
+                    + "?t=" + DateUtil.getCurrentDateString(DateUtil.DATE_PATTERN);
+            //2.更新用户头像信息接口
+            Users users = centerUsersService.updateUserFaceUrl(userId, faceUrl);
+            //TODO 后续会改，增加令牌token 整合redis
+            CookieUtils.setCookie(request,response,"user", JsonUtils.objectToJson(users),true);
+
         }else{
             return IMOOCJSONResult.errorMsg("文件名为空");
         }
