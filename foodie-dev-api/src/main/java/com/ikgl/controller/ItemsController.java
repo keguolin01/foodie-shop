@@ -74,7 +74,7 @@ public class ItemsController extends BaseController {
             page = 1;
         }
         if(pageSize == null){
-            pageSize = common_page_size;
+            pageSize = COMMON_PAGE_SIZE;
         }
         PagedGridResult commentByItemIdAndLevel = itemService.getCommentByItemIdAndLevel(itemId, level, page, pageSize);
         return IMOOCJSONResult.ok(commentByItemIdAndLevel);
@@ -97,7 +97,7 @@ public class ItemsController extends BaseController {
             page = 1;
         }
         if(pageSize == null){
-            pageSize = page_size;
+            pageSize = PAGE_SIZE;
         }
         PagedGridResult pagedGridResult = itemService.searchItemByKeywords(keywords, sort, page, pageSize);
         return IMOOCJSONResult.ok(pagedGridResult);
@@ -120,7 +120,7 @@ public class ItemsController extends BaseController {
             page = 1;
         }
         if(pageSize == null){
-            pageSize = page_size;
+            pageSize = PAGE_SIZE;
         }
         PagedGridResult pagedGridResult = itemService.searchItemByCatId(catId, sort, page, pageSize);
         return IMOOCJSONResult.ok(pagedGridResult);

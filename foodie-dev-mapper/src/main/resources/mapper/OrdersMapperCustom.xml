@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ikgl.mapper.OrdersMapperCustom" >
+    <resultMap id="myOrders" type="com.ikgl.pojo.vo.MyOrdersVO" >
+        <id column="orderId" property="orderId"/>
+        <result column="createdTime" property="createdTime"/>
+        <result column="payMethod" property="payMethod"/>
+        <result column="realPayAmount" property="realPayAmount"/>
+        <result column="orderStatus" property="orderStatus"/>
+        <result column="postAmount" property="postAmount"/>
+        <result column="isComment" property="isComment"/>
+        <collection property="subOrderItemList" select="getSubOrderItems" column="orderId" ofType="com.ikgl.pojo.vo.MySubOrderItemVO">
+            <result column="itemId" property="itemId"/>
+            <result column="itemName" property="itemName"/>
+            <result column="itemImg" property="itemImg"/>
+            <result column="itemSpecName" property="itemSpecName"/>
+            <result column="buyCounts" property="buyCounts"/>
+            <result column="price" property="price"/>
+        </collection>
+    </resultMap>
+<!-- 因为订单表与订单详情表是一对多  返回的时候分页数量是订单详情的数量
+是要以订单数量为准，一张订单下有多个订单详情
+1.要么就是在前端做处理，先去查询订单表10条在通过这十条的orderId查询订单详情信息
+2.后端mybatis做，跟第一种做法意思一样
+-->
+    <select id="queryMyOrders" resultMap="myOrders" parameterType="Map">
+        select
+        o.id as orderId,
+        o.real_pay_amount as realPayAmount,
+        o.pay_method as payMethod,
+        o.post_amount as postAmount,
+        o.created_time as createdTime,
+        o.is_comment as isComment,
+        os.order_status orderStatus
+        from
+        orders o
+        LEFT JOIN order_status os
+        on o.id = os.order_id
+        where
+        o.is_delete = 0
+        and o.user_id = #{paramsMap.userId}
+        <if test="paramsMap.status != null">
+            and os.order_status = #{paramsMap.status}
+        </if>
+        ORDER BY o.updated_time
+    </select>
+
+    <select id="getSubOrderItems" parameterType="string" resultType="com.ikgl.pojo.vo.MySubOrderItemVO">
+      select
+        oi.item_id itemId,
+        oi.item_img itemImg,
+        oi.item_name as itemName,
+        oi.item_spec_name as itemSpecName,
+        oi.buy_counts as buyCounts,
+        oi.price as price
+         from
+        order_items oi
+        where oi.order_id = #{orderId}
+    </select>
+
+
+
+<!--  <select id="queryMyOrdersDoNotUse" resultMap="myOrders" parameterType="Map">-->
+<!--     select-->
+<!--     o.id as orderId,-->
+<!--     o.real_pay_amount as realPayAmount,-->
+<!--     o.pay_method as payMethod,-->
+<!--     o.post_amount as postAmount,-->
+<!--     o.created_time as createdTime,-->
+<!--     o.is_comment as isComment,-->
+<!--     os.order_status orderStatus,-->
+<!--     oi.item_id itemId,-->
+<!--     oi.item_img itemImg,-->
+<!--     oi.item_name as itemName,-->
+<!--     oi.item_spec_name as itemSpecName,-->
+<!--     oi.buy_counts as buyCounts,-->
+<!--     oi.price as price-->
+<!--     from-->
+<!--     orders o-->
+<!--     LEFT JOIN-->
+<!--     order_items oi-->
+<!--     on o.id = oi.order_id-->
+<!--     LEFT JOIN order_status os-->
+<!--     on o.id = os.order_id-->
+<!--     where-->
+<!--     o.is_delete = 0-->
+<!--     and o.user_id = #{paramsMap.userId}-->
+<!--     <if test="paramsMap.status != null">-->
+<!--         and os.order_status = #{paramsMap.status}-->
+<!--     </if>-->
+<!--     ORDER BY o.updated_time-->
+<!--  </select>-->
+</mapper>
