@@ -9,6 +9,7 @@ import com.ikgl.utils.CookieUtils;
 import com.ikgl.utils.DateUtil;
 import com.ikgl.utils.IMOOCJSONResult;
 import com.ikgl.utils.JsonUtils;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.io.IOUtils;
@@ -31,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Api(value = "用户信息相关的api接口",tags = "用户信息相关的api接口")
 @RestController
 @RequestMapping("userInfo")
 public class CenterUserController extends BaseController {

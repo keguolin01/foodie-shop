@@ -9,6 +9,7 @@ import com.ikgl.mapper.OrdersMapperCustom;
 import com.ikgl.pojo.OrderStatus;
 import com.ikgl.pojo.Orders;
 import com.ikgl.pojo.vo.MyOrdersVO;
+import com.ikgl.pojo.vo.OrderStatusCountsVO;
 import com.ikgl.service.center.MyOrdersService;
 import com.ikgl.utils.PagedGridResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,5 +90,36 @@ public class MyOrdersServiceImpl implements MyOrdersService {
                 .andEqualTo("userId",userId);
         int result = ordersMapper.updateByExampleSelective(orders, example);
         return result == 1 ? true : false;
+    }
+
+    @Override
+    public OrderStatusCountsVO getStatusCount(String userId) {
+        Map<String,Object> map = new HashMap<>();
+        map.put("userId",userId);
+        map.put("status",OrderStatusEnum.WAIT_PAY.type);
+        int waitPayCounts = ordersMapperCustom.getStatusCount(map);
+
+        map.put("status",OrderStatusEnum.WAIT_DELIVER.type);
+        int waitDeliverCounts = ordersMapperCustom.getStatusCount(map);
+
+        map.put("status",OrderStatusEnum.WAIT_RECEIVE.type);
+        int waitReceiveCounts = ordersMapperCustom.getStatusCount(map);
+
+        map.put("status",OrderStatusEnum.SUCCESS.type);
+        map.put("isComment",YesOrNo.NO.type);
+        int waitCommentCounts = ordersMapperCustom.getStatusCount(map);
+        OrderStatusCountsVO vo = new OrderStatusCountsVO(waitPayCounts,waitDeliverCounts,
+                                                        waitReceiveCounts,waitCommentCounts);
+        return vo;
+    }
+
+    @Override
+    public PagedGridResult getOrdersTrend(String userId, Integer page, Integer pageSize) {
+        PageHelper.startPage(page,pageSize);
+        Map<String,Object> map = new HashMap<>();
+        map.put("userId",userId);
+        List<OrderStatus> orderStatuses = ordersMapperCustom.getOrdersTrend(map);
+        PagedGridResult pagedGridResult = PagedGridResult.setPagedGridResult(orderStatuses, page);
+        return pagedGridResult;
     }
 }

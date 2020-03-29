@@ -90,4 +90,41 @@
 <!--     </if>-->
 <!--     ORDER BY o.updated_time-->
 <!--  </select>-->
+
+    <select id="getStatusCount" resultType="int" parameterType="map">
+       SELECT count(1)
+       from
+       order_status os
+       LEFT JOIN
+       orders o
+       on os.order_id = o.id
+       where
+       o.is_delete = 0
+       and o.user_id = #{paramsMap.userId}
+       and os.order_status = #{paramsMap.status}
+       <if test="paramsMap.isComment !=null">
+           and o.is_comment = #{paramsMap.isComment}
+       </if>
+    </select>
+
+    <select id="getOrdersTrend" parameterType="string" resultType="com.ikgl.pojo.OrderStatus">
+      SELECT
+	os.order_id AS orderId,
+	os.order_status AS orderStatus,
+	os.created_time AS createdTime,
+	os.pay_time AS payTime,
+	os.deliver_time AS deliverTime,
+	os.success_time AS successTime,
+	os.close_time AS closeTime,
+	os.comment_time AS commentTime
+    FROM
+    	order_status os
+    LEFT JOIN orders o ON os.order_id = o.id
+    WHERE
+    	os.order_status IN (20, 30, 40)
+    AND o.is_delete = 0
+    AND o.user_id = #{paramsMap.userId}
+    ORDER BY
+	os.order_id DESC
+    </select>
 </mapper>

@@ -1,11 +1,17 @@
 package com.ikgl.controller;
 
+import com.ikgl.pojo.Orders;
+import com.ikgl.service.center.MyOrdersService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
 import java.io.File;
 
 @Controller
 public class BaseController {
+    @Autowired
+    private MyOrdersService myOrdersService;
+
     public static final String FOODIE_SHOPCART = "shopcart";
 
     public static final Integer COMMON_PAGE_SIZE = 10;
@@ -24,4 +30,9 @@ public class BaseController {
             + File.separator + "foodie"
             + File.separator + "images"
             + File.separator + "faces";
+
+    public Orders checkUserOrder(String userId, String orderId){
+        Orders orders =  myOrdersService.queryMyOrder(userId,orderId);
+        return orders;
+    }
 }

@@ -2,6 +2,7 @@ package com.ikgl.controller;
 
 import com.ikgl.pojo.bo.ShopCartBO;
 import com.ikgl.utils.IMOOCJSONResult;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+@Api(value = "购物车相关接口",tags = "购物车相关接口")
 @RestController
 @RequestMapping("shopcart")
 public class ShopCartController {

@@ -2,6 +2,7 @@ package com.ikgl.controller.center;
 
 import com.ikgl.controller.BaseController;
 import com.ikgl.pojo.Orders;
+import com.ikgl.pojo.vo.OrderStatusCountsVO;
 import com.ikgl.service.center.MyOrdersService;
 import com.ikgl.utils.IMOOCJSONResult;
 import com.ikgl.utils.PagedGridResult;
@@ -78,19 +79,46 @@ public class MyOrdersController extends BaseController {
                                            @ApiParam(name = "userId",value = "用户id",required = true)
                                            @RequestParam String userId){
         Orders orders = checkUserOrder(userId,orderId);
+        boolean success = myOrdersService.deleteOrder(userId,orderId);
         if(orders == null){
             return IMOOCJSONResult.errorMsg("订单不存在");
         }
-        boolean success = myOrdersService.deleteOrder(userId,orderId);
         if(!success){
             return IMOOCJSONResult.errorMsg("删除失败，请联系管理员");
         }
         return IMOOCJSONResult.ok();
     }
 
+    @ApiOperation(value = "获取各个状态下数量",notes = "获取各个状态下数量",httpMethod = "POST")
+    @PostMapping("statusCounts")
+    public IMOOCJSONResult statusCounts(
+            @ApiParam(value = "用户id",name = "userId",required = true)
+            @RequestParam String userId){
+        if(StringUtils.isBlank(userId)){
+            return IMOOCJSONResult.errorMsg("用户id为空");
+        }
+        OrderStatusCountsVO orderStatusCountsVO = myOrdersService.getStatusCount(userId);
+        return IMOOCJSONResult.ok(orderStatusCountsVO);
+    }
 
-    private Orders checkUserOrder(String userId,String orderId){
-        Orders orders =  myOrdersService.queryMyOrder(userId,orderId);
-        return orders;
+    @ApiOperation(value = "查询我的评价详情",notes = "查询我的评价详情",httpMethod = "POST")
+    @PostMapping("trend")
+    public IMOOCJSONResult trend(@ApiParam(name = "userId",value = "用户id",required = true)
+                                        @RequestParam String userId,
+                                        @ApiParam(name = "page",value = "第几页",required = true)
+                                        @RequestParam Integer page,
+                                        @ApiParam(name = "pageSize",value = "一页显示几条",required = true)
+                                        @RequestParam Integer pageSize){
+        if(StringUtils.isBlank(userId)){
+            return IMOOCJSONResult.errorMsg("用户id为空");
+        }
+        if(page == null){
+            page = 1;
+        }
+        if(pageSize == null){
+            pageSize = COMMON_PAGE_SIZE;
+        }
+        PagedGridResult pagedGridResult = myOrdersService.getOrdersTrend(userId, page, pageSize);
+        return IMOOCJSONResult.ok(pagedGridResult);
     }
 }

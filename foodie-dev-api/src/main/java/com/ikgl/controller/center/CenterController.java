@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-@Api(value = "门户相关",tags = "用门户相关的接口")
+@Api(value = "门户相关",tags = "门户相关的接口")
 @RestController
 @RequestMapping("center")
 public class CenterController {
