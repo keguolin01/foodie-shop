@@ -3,13 +3,18 @@ package com.ikgl.controller;
 import com.ikgl.enums.OrderStatusEnum;
 import com.ikgl.enums.PayMethod;
 import com.ikgl.pojo.OrderStatus;
+import com.ikgl.pojo.bo.ShopCartBO;
 import com.ikgl.pojo.bo.SubmitOrderBO;
 import com.ikgl.pojo.vo.MerchantOrdersVO;
 import com.ikgl.pojo.vo.OrderVO;
 import com.ikgl.service.OrderService;
+import com.ikgl.utils.CookieUtils;
 import com.ikgl.utils.IMOOCJSONResult;
+import com.ikgl.utils.JsonUtils;
+import com.ikgl.utils.RedisOperator;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +26,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 
 @Api(value = "订单",tags={"订单相关的api接口"})
 @RestController
@@ -34,7 +40,10 @@ public class OrdersController extends BaseController{
     @Autowired
     private RestTemplate restTemplate;
 
-    @ApiOperation(value = "用户修改地址",notes = "用户修改地址",httpMethod = "POST")
+    @Autowired
+    private RedisOperator redisOperator;
+
+    @ApiOperation(value = "支付中心创建订单",notes = "支付中心创建订单",httpMethod = "POST")
     @PostMapping("create")
     public IMOOCJSONResult create(@RequestBody SubmitOrderBO submitOrderBO,
                                 HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -42,15 +51,21 @@ public class OrdersController extends BaseController{
                 submitOrderBO.getPayMethod()!= PayMethod.ALIPAY.type){
             return IMOOCJSONResult.errorMsg("支付方式不支持");
         }
+        String shopCartJson = redisOperator.get(FOODIE_SHOPCART +":" + submitOrderBO.getUserId());
+        if(StringUtils.isBlank(shopCartJson)){
+            return IMOOCJSONResult.errorMsg("购物车为空");
+        }
+        List<ShopCartBO> list = JsonUtils.jsonToList(shopCartJson,ShopCartBO.class);
         //1.创建订单
-        OrderVO orderVO = orderService.creatOrder(submitOrderBO);
+        OrderVO orderVO = orderService.creatOrder(list,submitOrderBO);
         MerchantOrdersVO merchantOrdersVO = orderVO.getMerchantOrdersVO();
         merchantOrdersVO.setReturnUrl(payReturnUrl);
         //便于测试 这边都以一分钱
         merchantOrdersVO.setAmount(1);
         //2.移除购物车中已结算（已提交的商品）
-        //TODO 现在暂时是全部清空
-        //CookieUtils.setCookie(request,response,FOODIE_SHOPCART,"",true);
+        list.removeAll(orderVO.getToBeRemovedShopCartList());
+        redisOperator.set(FOODIE_SHOPCART +":" + submitOrderBO.getUserId(),JsonUtils.objectToJson(list));
+        CookieUtils.setCookie(request,response,FOODIE_SHOPCART,JsonUtils.objectToJson(list),true);
         //3.向支付中心发送当前的订单
         //1.可以使用Http.post 2.用spring集成的http请求
         //1.Http.post

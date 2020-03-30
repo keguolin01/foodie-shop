@@ -7,6 +7,7 @@ import com.ikgl.mapper.OrderItemsMapper;
 import com.ikgl.mapper.OrderStatusMapper;
 import com.ikgl.mapper.OrdersMapper;
 import com.ikgl.pojo.*;
+import com.ikgl.pojo.bo.ShopCartBO;
 import com.ikgl.pojo.bo.SubmitOrderBO;
 import com.ikgl.pojo.vo.MerchantOrdersVO;
 import com.ikgl.pojo.vo.OrderVO;
@@ -20,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -50,7 +52,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional
     @Override
-    public OrderVO creatOrder(SubmitOrderBO submitOrderBO) {
+    public OrderVO creatOrder(List<ShopCartBO> list,SubmitOrderBO submitOrderBO) {
         String userId = submitOrderBO.getUserId();
         String itemSpecIds = submitOrderBO.getItemSpecIds();
         String addressId = submitOrderBO.getAddressId();
@@ -81,9 +83,11 @@ public class OrderServiceImpl implements OrderService {
         int totalAmount = 0;
         int realPayAmount = 0;
         String[] specids = itemSpecIds.split(",");
+        List<ShopCartBO> toBeRemovedShopCarts = new ArrayList<>();
         for(String specId : specids){
-            //TODO 整合redis后 购买数量从redis中获取
-            int buyCount = 1;
+            ShopCartBO bo = getBuyCountFromRedis(list,specId);
+            toBeRemovedShopCarts.add(bo);
+            int buyCount = bo.getBuyCounts();
             //根据规格id 查出相对应的价格
             ItemsSpec itemsSpec = itemService.getItemsSpecBySpecId(specId);
             totalAmount += itemsSpec.getPriceNormal() * buyCount;
@@ -131,7 +135,17 @@ public class OrderServiceImpl implements OrderService {
         OrderVO orderVO = new OrderVO();
         orderVO.setOrderId(orderId);
         orderVO.setMerchantOrdersVO(merchantOrdersVO);
+        orderVO.setToBeRemovedShopCartList(toBeRemovedShopCarts);
         return orderVO;
+    }
+
+    private ShopCartBO getBuyCountFromRedis(List<ShopCartBO> list,String specId) {
+        for(ShopCartBO bo : list){
+            if(bo.getSpecId().equals(specId)){
+                return bo;
+            }
+        }
+        return null;
     }
 
     @Transactional

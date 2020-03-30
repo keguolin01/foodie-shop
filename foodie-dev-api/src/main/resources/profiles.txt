@@ -11,4 +11,8 @@ profiles 多环境配置文件梳理
   2.2 test 可以打印
   2.3 prod 不用打印
 
-3.
+3.图片存储路径
+
+
+4.从支付中心回调吃货服务后端的回调地址
+http://47.98.138.56:8088/foodie-dev-api/orders/notifyMerchantOrderPaid
