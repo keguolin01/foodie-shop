@@ -15,6 +15,7 @@ import com.ikgl.utils.RedisOperator;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,10 +44,13 @@ public class OrdersController extends BaseController{
     @Autowired
     private RedisOperator redisOperator;
 
+
+
     @ApiOperation(value = "支付中心创建订单",notes = "支付中心创建订单",httpMethod = "POST")
     @PostMapping("create")
     public IMOOCJSONResult create(@RequestBody SubmitOrderBO submitOrderBO,
                                 HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String s = JsonUtils.objectToJson(submitOrderBO);
         if(submitOrderBO.getPayMethod()!= PayMethod.WEIXIN.type &&
                 submitOrderBO.getPayMethod()!= PayMethod.ALIPAY.type){
             return IMOOCJSONResult.errorMsg("支付方式不支持");
@@ -57,7 +61,12 @@ public class OrdersController extends BaseController{
         }
         List<ShopCartBO> list = JsonUtils.jsonToList(shopCartJson,ShopCartBO.class);
         //1.创建订单
-        OrderVO orderVO = orderService.creatOrder(list,submitOrderBO);
+        OrderVO orderVO = null;
+        try {
+            orderVO = orderService.creatOrder(list,submitOrderBO);
+        } catch (Exception e) {
+           return IMOOCJSONResult.errorMsg("扣减库存出错，库存不足！");
+        }
         MerchantOrdersVO merchantOrdersVO = orderVO.getMerchantOrdersVO();
         merchantOrdersVO.setReturnUrl(payReturnUrl);
         //便于测试 这边都以一分钱

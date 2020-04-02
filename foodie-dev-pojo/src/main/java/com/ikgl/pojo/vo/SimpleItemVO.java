@@ -1,5 +1,8 @@
 package com.ikgl.pojo.vo;
 
+import lombok.Data;
+
+@Data
 public class SimpleItemVO {
 
     private String itemId;
@@ -8,27 +11,4 @@ public class SimpleItemVO {
 
     private String itemUrl;
 
-    public String getItemId() {
-        return itemId;
-    }
-
-    public void setItemId(String itemId) {
-        this.itemId = itemId;
-    }
-
-    public String getItemName() {
-        return itemName;
-    }
-
-    public void setItemName(String itemName) {
-        this.itemName = itemName;
-    }
-
-    public String getItemUrl() {
-        return itemUrl;
-    }
-
-    public void setItemUrl(String itemUrl) {
-        this.itemUrl = itemUrl;
-    }
 }

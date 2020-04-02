@@ -2,6 +2,8 @@ package com.ikgl.service.impl;
 
 import com.ikgl.enums.OrderStatusEnum;
 import com.ikgl.enums.YesOrNo;
+import com.ikgl.lock.RedisLock;
+import com.ikgl.lock.ZkLock;
 import com.ikgl.mapper.ItemsSpecMapper;
 import com.ikgl.mapper.OrderItemsMapper;
 import com.ikgl.mapper.OrderStatusMapper;
@@ -15,18 +17,29 @@ import com.ikgl.service.AddressService;
 import com.ikgl.service.ItemService;
 import com.ikgl.service.OrderService;
 import com.ikgl.utils.DateUtil;
-import org.aspectj.weaver.ast.Or;
+import com.ikgl.utils.RedissonUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.recipes.locks.InterProcessMutex;
 import org.n3r.idworker.Sid;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
+@Slf4j
 public class OrderServiceImpl implements OrderService {
+
+    private final String orderZookeeperKey = "order";
+    private final String zookeeperCuratorPath = "/order";
 
     @Autowired
     private OrdersMapper ordersMapper;
@@ -49,10 +62,16 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private ItemsSpecMapper itemsSpecMapper;
 
+    @Autowired
+    private RedisTemplate redisTemplate;
+
+    @Autowired
+    private CuratorFramework client;
+
 
     @Transactional
     @Override
-    public OrderVO creatOrder(List<ShopCartBO> list,SubmitOrderBO submitOrderBO) {
+    public OrderVO creatOrder(List<ShopCartBO> list,SubmitOrderBO submitOrderBO) throws Exception {
         String userId = submitOrderBO.getUserId();
         String itemSpecIds = submitOrderBO.getItemSpecIds();
         String addressId = submitOrderBO.getAddressId();
@@ -87,7 +106,8 @@ public class OrderServiceImpl implements OrderService {
         for(String specId : specids){
             ShopCartBO bo = getBuyCountFromRedis(list,specId);
             toBeRemovedShopCarts.add(bo);
-            int buyCount = bo.getBuyCounts();
+            int buyCount = 1;
+//            int buyCount = bo.getBuyCounts();
             //根据规格id 查出相对应的价格
             ItemsSpec itemsSpec = itemService.getItemsSpecBySpecId(specId);
             totalAmount += itemsSpec.getPriceNormal() * buyCount;
@@ -110,7 +130,14 @@ public class OrderServiceImpl implements OrderService {
             orderItems.setItemSpecName(itemsSpec.getName());
             orderItemsMapper.insert(orderItems);
             //相对应需要减库存 规格表中
-            itemService.decreaseItemSpecStock(specId,buyCount);
+            //都可以实现集群部署定时任务加锁
+            // 加redis分布式锁
+//            getRedisLock(specId,buyCount);
+            // 加zookeeper分布式锁
+            //getZookeeperLock(specId,buyCount);
+            // 加zookeeper Curator分布式锁
+//            getZookeeperCurator(specId,buyCount);
+            getRedissonLock(specId,buyCount);
         }
 
         //订单总价格
@@ -137,6 +164,69 @@ public class OrderServiceImpl implements OrderService {
         orderVO.setMerchantOrdersVO(merchantOrdersVO);
         orderVO.setToBeRemovedShopCartList(toBeRemovedShopCarts);
         return orderVO;
+    }
+
+    //支持阻塞  Redis实现
+    private void getRedissonLock(String specId,Integer buyCount) throws Exception {
+        RedissonClient redisson = RedissonUtils.getRedissonClient();
+        RLock rLock = redisson.getLock(orderZookeeperKey);
+        log.info("我进入了方法！！");
+        try {
+            rLock.lock(30, TimeUnit.SECONDS);
+            log.info("我获得了锁！！！");
+            itemService.decreaseItemSpecStock(specId,buyCount);
+            Thread.sleep(10000);
+        }finally {
+            log.info("我释放了锁！！");
+            rLock.unlock();
+        }
+        log.info("方法执行完成！！");
+    }
+
+    // 从获取锁到释放锁基本很快 如果出现并发也可以确保数据的原子性
+    // 缺点 不支持阻塞 就是并发下单的时候 后面那位不会等待前面那个释放锁，直接执行后面的
+    // 缺点 redis 默认key失效时间30s 假设超过30s 就会存在key被自动释放
+    // 下一个进来可能就会出现其他的问题（库存可能不充足但还是下单成功了）
+    private void getRedisLock(String specId,Integer buyCount) throws Exception{
+        try (RedisLock redisLock = new RedisLock(redisTemplate,"redisKey",15)){
+            if (redisLock.getLock()) {
+                log.info("我进入了锁！！");
+                itemService.decreaseItemSpecStock(specId,buyCount);
+                Thread.sleep(16000);
+            }
+        }
+    }
+    //支持阻塞  zookeeper实现
+    private void getZookeeperLock(String specId,Integer buyCount) throws Exception {
+        log.info("我进入了方法！");
+        try(ZkLock zkLock = new ZkLock()) {
+            if (zkLock.getLock(orderZookeeperKey)){
+                log.info("我获得了锁");
+                itemService.decreaseItemSpecStock(specId,buyCount);
+            }
+        }
+        log.info("方法执行完成！");
+    }
+
+    //支持阻塞  zookeeperCurator实现
+    private void getZookeeperCurator(String specId,Integer buyCount) throws Exception {
+        log.info("我进入了方法！");
+        InterProcessMutex lock = new InterProcessMutex(client, zookeeperCuratorPath);
+        try{
+            if (lock.acquire(30, TimeUnit.SECONDS)){
+                log.info("我获得了锁！！");
+                itemService.decreaseItemSpecStock(specId,buyCount);
+                Thread.sleep(15000);
+            }
+        } finally {
+            try {
+                log.info("我释放了锁！！");
+                lock.release();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        log.info("方法执行完成！");
     }
 
     private ShopCartBO getBuyCountFromRedis(List<ShopCartBO> list,String specId) {

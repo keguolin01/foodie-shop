@@ -152,18 +152,30 @@
         <artifactId>pagehelper-spring-boot-starter</artifactId>
         <version>1.2.3</version>
     </dependency>
+        <!--引入zookeeper-->
+        <dependency>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+            <version>3.4.14</version>
+        </dependency>
+        <!--引入zookeeper客户端-->
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-recipes</artifactId>
+            <version>4.2.0</version>
+        </dependency>
 
         <!--引入日志依赖 抽象层 与 实现层-->
-        <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-api</artifactId>
-        <version>1.7.21</version>
-        </dependency>
-        <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-log4j12</artifactId>
-        <version>1.7.26</version>
-        </dependency>
+<!--        <dependency>-->
+<!--        <groupId>org.slf4j</groupId>-->
+<!--        <artifactId>slf4j-api</artifactId>-->
+<!--        <version>1.7.21</version>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--        <groupId>org.slf4j</groupId>-->
+<!--        <artifactId>slf4j-log4j12</artifactId>-->
+<!--        <version>1.7.26</version>-->
+<!--        </dependency>-->
 
         <!--[3] 打war包 添加依赖 因为移除tomcat内置的servlet-->
         <dependency>
@@ -183,8 +195,26 @@
 <!--            <artifactId>httpclient</artifactId>-->
 <!--            <version>4.5.6</version>-->
 <!--        </dependency>-->
+        <!--启用lombok-->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
 
-
+        <!--启用redisson 实现分布式锁 Java Api-->
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson</artifactId>
+            <version>3.11.2</version>
+        </dependency>
+        <!--启用redisson 实现分布式锁 结合spring和springboot 用不了启动没报错有注入进去-->
+<!--        <dependency>-->
+<!--            <groupId>org.redisson</groupId>-->
+<!--            <artifactId>redisson-spring-boot-starter</artifactId>-->
+<!--            <version>3.11.2</version>-->
+<!--        </dependency>-->
+        <!--启用redis-->
         <dependency>
             <groupId>org.springframework.session</groupId>
             <artifactId>spring-session-data-redis</artifactId>

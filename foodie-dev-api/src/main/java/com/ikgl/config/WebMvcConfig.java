@@ -1,5 +1,11 @@
 package com.ikgl.config;
 
+import com.ikgl.resource.ZookeeperResource;
+import org.apache.curator.RetryPolicy;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +17,9 @@ import java.io.File;
 
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
+
+    @Autowired
+    private ZookeeperResource zookeeperResource;
 
     @Bean
     public RestTemplate initRestTemplate(RestTemplateBuilder builder){
@@ -28,5 +37,12 @@ public class WebMvcConfig implements WebMvcConfigurer {
             registry.addResourceHandler("/**")
                     .addResourceLocations("classpath:/META-INF/resources/")
                     .addResourceLocations(path);//映射本地静态资源
+    }
+
+    @Bean(initMethod="start",destroyMethod = "close")
+    public CuratorFramework getCuratorFramework() {
+        RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 3);
+        CuratorFramework client = CuratorFrameworkFactory.newClient(zookeeperResource.getAddr(), retryPolicy);
+        return client;
     }
 }
