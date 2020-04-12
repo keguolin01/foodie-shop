@@ -1,5 +1,6 @@
 package com.ikgl;
 
+import com.ulisesbocchio.jasyptspringboot.annotation.EnableEncryptableProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
@@ -7,6 +8,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import tk.mybatis.spring.annotation.MapperScan;
 
 @SpringBootApplication
+@EnableEncryptableProperties
 //(exclude = {SecurityAutoConfiguration.class})
 //@EnableAutoConfiguration
 //扫描mybatis通用mapper所在的包

@@ -14,6 +14,7 @@ import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
+import org.jasypt.util.text.BasicTextEncryptor;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -150,4 +151,19 @@ public class ESTest {
             System.out.println(n);
         }
     }
+    @Test
+    public void test() throws Exception {
+//        String password = "kgl19960702.";
+//        ConfigTools.main(new String[]{password});
+        // jasypt
+        BasicTextEncryptor textEncryptor = new BasicTextEncryptor();
+        textEncryptor.setPassword("salt");
+        // 加密
+        String password = textEncryptor.encrypt("imooc");
+        System.out.println("^0^===password:"+ password);
+        // 解密
+        String originPwd = textEncryptor.decrypt("u+eEBYi6ZFY5de5Mv5fi8A==");
+        System.out.println("^0^===originPwd:"+ originPwd);
+    }
+
 }
