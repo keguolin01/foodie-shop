@@ -1,6 +1,5 @@
 package com.ikgl.utils;
 
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 
 import java.util.List;
@@ -8,9 +7,8 @@ import java.util.List;
 /**
  * 
  * @Title: PagedGridResult.java
- * @Package com.imooc.utils
+ * @Package com.ikgl.utils
  * @Description: 用来返回分页Grid的数据格式
- * Copyright: Copyright (c) 2019
  */
 public class PagedGridResult {
 	

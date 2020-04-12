@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 
 /**
  * @Title: Redis 工具类
- * @author 慕课网
  */
 @Component
 public class RedisOperator {

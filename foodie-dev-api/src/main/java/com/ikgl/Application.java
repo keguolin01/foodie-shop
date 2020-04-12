@@ -2,14 +2,12 @@ package com.ikgl;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.ImportResource;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
 import tk.mybatis.spring.annotation.MapperScan;
 
-@SpringBootApplication(exclude = {SecurityAutoConfiguration.class})
+@SpringBootApplication
+//(exclude = {SecurityAutoConfiguration.class})
 //@EnableAutoConfiguration
 //扫描mybatis通用mapper所在的包
 @MapperScan(basePackages = "com.ikgl.mapper")

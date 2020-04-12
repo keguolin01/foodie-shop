@@ -1,7 +1,7 @@
 package com.ikgl.controller;
 
 import com.ikgl.pojo.bo.ShopCartBO;
-import com.ikgl.utils.IMOOCJSONResult;
+import com.ikgl.utils.ResponseJSONResult;
 import com.ikgl.utils.JsonUtils;
 import com.ikgl.utils.RedisOperator;
 import io.swagger.annotations.Api;
@@ -25,10 +25,10 @@ public class ShopCartController extends BaseController{
 
     @ApiOperation(value = "添加商品到购物车",notes = "添加商品到购物车",httpMethod = "POST")
     @PostMapping("add")
-    public IMOOCJSONResult add(@RequestParam String userId,@RequestBody ShopCartBO shopCartBO,
-                               HttpServletRequest request, HttpServletResponse response){
+    public ResponseJSONResult add(@RequestParam String userId, @RequestBody ShopCartBO shopCartBO,
+                                  HttpServletRequest request, HttpServletResponse response){
         if(StringUtils.isBlank(userId)){
-            return IMOOCJSONResult.errorMsg("用户id为空");
+            return ResponseJSONResult.errorMsg("用户id为空");
         }
         String shopCartJson = redisOperator.get(FOODIE_SHOPCART +":" + userId);
         List<ShopCartBO> list = null;
@@ -49,14 +49,14 @@ public class ShopCartController extends BaseController{
             list.add(shopCartBO);
         }
         redisOperator.set(FOODIE_SHOPCART +":" + userId, JsonUtils.objectToJson(list));
-        return IMOOCJSONResult.ok();
+        return ResponseJSONResult.ok();
     }
 
     @ApiOperation(value = "从购车中删除商品",notes = "从购车中删除商品",httpMethod = "POST")
     @PostMapping("del")
-    public IMOOCJSONResult del(@RequestParam String userId,@RequestParam String itemSpecId){
+    public ResponseJSONResult del(@RequestParam String userId, @RequestParam String itemSpecId){
         if(StringUtils.isBlank(userId) || StringUtils.isBlank(itemSpecId)){
-            return IMOOCJSONResult.errorMsg("参数不能为空");
+            return ResponseJSONResult.errorMsg("参数不能为空");
         }
         String shopCartJson = redisOperator.get(FOODIE_SHOPCART +":" + userId);
         if(StringUtils.isNotBlank(shopCartJson)){
@@ -69,6 +69,6 @@ public class ShopCartController extends BaseController{
             }
             redisOperator.set(FOODIE_SHOPCART +":" + userId, JsonUtils.objectToJson(list));
         }
-        return IMOOCJSONResult.ok();
+        return ResponseJSONResult.ok();
     }
 }

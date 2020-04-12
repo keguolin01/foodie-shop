@@ -67,6 +67,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private CuratorFramework client;
+//     fs依赖service时会出现bean未加载  要么那个加载文件复制过去
 
 
     @Transactional
@@ -175,7 +176,7 @@ public class OrderServiceImpl implements OrderService {
             rLock.lock(30, TimeUnit.SECONDS);
             log.info("我获得了锁！！！");
             itemService.decreaseItemSpecStock(specId,buyCount);
-            Thread.sleep(10000);
+//            Thread.sleep(10000);
         }finally {
             log.info("我释放了锁！！");
             rLock.unlock();

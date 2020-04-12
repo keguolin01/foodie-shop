@@ -10,7 +10,7 @@ public class RedissonUtils {
 
     public static RedissonClient getRedissonClient() throws IOException {
         Config config = new Config();
-        config.useSingleServer().setAddress("redis://127.0.0.1:6379").setPassword("imooc");
+        config.useSingleServer().setAddress("redis://47.98.138.56:6379").setPassword("imooc");
         RedissonClient client = Redisson.create(config);
         return client;
     }

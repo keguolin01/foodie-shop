@@ -7,7 +7,7 @@ import com.ikgl.pojo.vo.CategoryVO;
 import com.ikgl.pojo.vo.NewItemsVO;
 import com.ikgl.service.CarouselService;
 import com.ikgl.service.CategoryService;
-import com.ikgl.utils.IMOOCJSONResult;
+import com.ikgl.utils.ResponseJSONResult;
 import com.ikgl.utils.JsonUtils;
 import com.ikgl.utils.RedisOperator;
 import io.swagger.annotations.Api;
@@ -15,8 +15,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisOperations;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,7 +39,7 @@ public class IndexController {
 
     @ApiOperation(value = "首页轮播图展示",notes = "首页轮播图展示",httpMethod = "GET")
     @GetMapping("carousel")
-    public IMOOCJSONResult getCarouselPicture(){
+    public ResponseJSONResult getCarouselPicture(){
         List<Carousel> list = new ArrayList<>();
         String carousel = redisOperator.get("carousel");
         if(StringUtils.isBlank(carousel)){
@@ -51,7 +49,7 @@ public class IndexController {
             list = JsonUtils.jsonToList(carousel,Carousel.class);
         }
         list = carouselService.queryAll(YesOrNo.YES.type);
-        return IMOOCJSONResult.ok(list);
+        return ResponseJSONResult.ok(list);
     }
 
     //1.如果轮播图发生更改  一般就删除缓存 然后重置
@@ -59,11 +57,11 @@ public class IndexController {
 
     @ApiOperation(value = "获取商品所有分类详情",notes = "获取商品所有分类详情",httpMethod = "GET")
     @GetMapping("subCat/{rootCatId}")
-    public IMOOCJSONResult subCat(
+    public ResponseJSONResult subCat(
             @ApiParam(name = "rootCatId",value = "一级分类id",required = true)
             @PathVariable("rootCatId") Integer rootCatId){
         if(rootCatId == null){
-            return IMOOCJSONResult.errorMsg("该分类下商品不存在");
+            return ResponseJSONResult.errorMsg("该分类下商品不存在");
         }
         List<CategoryVO> list = new ArrayList<>();
         String subCats = redisOperator.get("subCat:"+rootCatId);
@@ -73,12 +71,12 @@ public class IndexController {
         }else{
             list = JsonUtils.jsonToList(subCats,CategoryVO.class);
         }
-        return IMOOCJSONResult.ok(list);
+        return ResponseJSONResult.ok(list);
     }
 
     @ApiOperation(value = "获取商品分类（二级分类）",notes = "获取商品分类（二级分类）",httpMethod = "GET")
     @GetMapping("cats")
-    public IMOOCJSONResult cats(){
+    public ResponseJSONResult cats(){
         List<Category> list = new ArrayList<>();
         String cats = redisOperator.get("cats");
         if(StringUtils.isBlank(cats)){
@@ -87,17 +85,17 @@ public class IndexController {
         }else{
             list = JsonUtils.jsonToList(cats,Category.class);
         }
-        return IMOOCJSONResult.ok(list);
+        return ResponseJSONResult.ok(list);
     }
 
     @ApiOperation(value = "查询每个一级分类下最新的6条数据",notes = "查询每个一级分类下最新的6条数据",httpMethod = "GET")
     @GetMapping("sixNewItems/{rootCatId}")
-    public IMOOCJSONResult cats(@ApiParam(name = "rootCatId",value = "一级分类id",required = true)
+    public ResponseJSONResult cats(@ApiParam(name = "rootCatId",value = "一级分类id",required = true)
                                     @PathVariable("rootCatId") String rootCatId){
         if(StringUtils.isBlank(rootCatId)){
-            return IMOOCJSONResult.errorMsg("该分类下商品不存在");
+            return ResponseJSONResult.errorMsg("该分类下商品不存在");
         }
         List<NewItemsVO> newItemsVOS = categoryService.getSixNewItemsLazy(rootCatId);
-        return IMOOCJSONResult.ok(newItemsVOS);
+        return ResponseJSONResult.ok(newItemsVOS);
     }
 }

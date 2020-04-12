@@ -1,0 +1,12 @@
+############################################################ ## 配置数据源信息 #############################################################
+spring:
+ datasource:
+  type: com.zaxxer.hikari.HikariDataSource # 数据源类型：HikariCP
+  driver-class-name: com.mysql.jdbc.Driver # 数据源类型：HikariCP
+  url: jdbc:mysql://localhost:3306/foodie-shop?useUnicode=true&characterEncoding=UTF-8&autoReconnect # mysql驱动
+  username: root
+  password: root
+ data:
+   elasticsearch:
+    cluster-name: kgl-cluster
+    cluster-nodes: 47.98.135.169:9300

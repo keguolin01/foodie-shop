@@ -7,7 +7,7 @@ import com.ikgl.resource.FileUpLoad;
 import com.ikgl.service.center.CenterUsersService;
 import com.ikgl.utils.CookieUtils;
 import com.ikgl.utils.DateUtil;
-import com.ikgl.utils.IMOOCJSONResult;
+import com.ikgl.utils.ResponseJSONResult;
 import com.ikgl.utils.JsonUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -43,9 +43,9 @@ public class CenterUserController extends BaseController {
     @Autowired
     private FileUpLoad fileUpLoad;
 
-    @ApiOperation(value = "查询用户信息",notes = "查询用户信息",httpMethod = "POST")
+    @ApiOperation(value = "更新用户信息",notes = "更新用户信息",httpMethod = "POST")
     @PostMapping("update")
-    public IMOOCJSONResult update(
+    public ResponseJSONResult update(
             @ApiParam(value = "用户id",name = "userId",required = true)
             @RequestParam String userId,
             @Valid @RequestBody CenterUserBO centerUserBO,
@@ -54,17 +54,17 @@ public class CenterUserController extends BaseController {
             HttpServletResponse response){
         if(result.hasErrors()){
             Map<String,String> map = getErrors(result);
-            return IMOOCJSONResult.errorMap(map);
+            return ResponseJSONResult.errorMap(map);
         }
         Users users = centerUsersService.updateUserInfo(userId, centerUserBO);
         //TODO 后续会改，增加令牌token 整合redis
         CookieUtils.setCookie(request,response,"user", JsonUtils.objectToJson(users),true);
-        return IMOOCJSONResult.ok();
+        return ResponseJSONResult.ok();
     }
 
-    @ApiOperation(value = "查询用户信息",notes = "查询用户信息",httpMethod = "POST")
+    @ApiOperation(value = "更新用户头像",notes = "更新用户头像",httpMethod = "POST")
     @PostMapping("uploadFace")
-    public IMOOCJSONResult uploadFace(
+    public ResponseJSONResult uploadFace(
             @ApiParam(value = "用户id",name = "userId",required = true)
                     @RequestParam String userId,
                      MultipartFile file,
@@ -72,7 +72,7 @@ public class CenterUserController extends BaseController {
             HttpServletResponse response){
         FileOutputStream fos = null;
         if(file == null){
-            return IMOOCJSONResult.errorMsg("文件不存在");
+            return ResponseJSONResult.errorMsg("文件不存在");
         }
         //1.文件名
         String fileName = file.getOriginalFilename();
@@ -88,7 +88,7 @@ public class CenterUserController extends BaseController {
                 if(!suffix.equalsIgnoreCase("jpg")
                 && !suffix.equalsIgnoreCase("jpeg")
                 && !suffix.equalsIgnoreCase("png")){
-                    return IMOOCJSONResult.errorMsg("图片格式不正确");
+                    return ResponseJSONResult.errorMsg("图片格式不正确");
                 }
                 Long current = new Date().getTime();
                 //3.新的文件名
@@ -140,10 +140,10 @@ public class CenterUserController extends BaseController {
             CookieUtils.setCookie(request,response,"user", JsonUtils.objectToJson(users),true);
 
         }else{
-            return IMOOCJSONResult.errorMsg("文件名为空");
+            return ResponseJSONResult.errorMsg("文件名为空");
         }
 
-        return IMOOCJSONResult.ok();
+        return ResponseJSONResult.ok();
     }
 
     private Map<String,String> getErrors(BindingResult result){

@@ -29,15 +29,15 @@ public class UsersController extends BaseController{
     private UsersService usersService;
     @ApiOperation(value = "用户名是否存在",notes = "用户名是否存在",httpMethod = "GET")
     @GetMapping("usernameIsExist")
-    public IMOOCJSONResult userNameIsExist(@RequestParam String username){
+    public ResponseJSONResult userNameIsExist(@RequestParam String username){
         if(StringUtils.isBlank(username)){
-            return IMOOCJSONResult.errorMsg("用户名为空");
+            return ResponseJSONResult.errorMsg("用户名为空");
         }
         Boolean isExist = usersService.userNameIsExist(username);
         if(isExist){
-            return IMOOCJSONResult.errorMsg("用户名已存在");
+            return ResponseJSONResult.errorMsg("用户名已存在");
         }
-        return IMOOCJSONResult.ok();
+        return ResponseJSONResult.ok();
     }
 
 //    @GetMapping("getById")
@@ -63,27 +63,27 @@ public class UsersController extends BaseController{
 //    }
     @ApiOperation(value = "用户注册",notes = "用户注册",httpMethod = "POST")
     @PostMapping("regist")
-    public IMOOCJSONResult regist(@RequestBody UserBO userBO, HttpServletRequest request, HttpServletResponse response){
+    public ResponseJSONResult regist(@RequestBody UserBO userBO, HttpServletRequest request, HttpServletResponse response){
         String username = userBO.getUsername();
         String password = userBO.getPassword();
         String confirmPassword = userBO.getConfirmPassword();
 
         //判断用户名 密码不能为空
         if(StringUtils.isBlank(username) ||StringUtils.isBlank(password) ||StringUtils.isBlank(confirmPassword)){
-            IMOOCJSONResult.errorMsg("用户名密码不能为空");
+            ResponseJSONResult.errorMsg("用户名密码不能为空");
         }
         //查看用户名是否存在
         Boolean isExist = usersService.userNameIsExist(username);
         if(isExist) {
-            return IMOOCJSONResult.errorMsg("用户名已存在");
+            return ResponseJSONResult.errorMsg("用户名已存在");
         }
         //判断密码强度
         if(password.length()<6){
-            return IMOOCJSONResult.errorMsg("密码长度小于6");
+            return ResponseJSONResult.errorMsg("密码长度小于6");
         }
         //判断两次密码是否一致
         if(!password.equals(confirmPassword)){
-            return IMOOCJSONResult.errorMsg("密码输入不一致");
+            return ResponseJSONResult.errorMsg("密码输入不一致");
         }
         //插入
         Users user = usersService.createUser(userBO);
@@ -93,27 +93,27 @@ public class UsersController extends BaseController{
         //同步购物车数据
         synchShopCartData(user.getId(),request,response);
         //注册完后
-        return IMOOCJSONResult.ok();
+        return ResponseJSONResult.ok();
     }
     @ApiOperation(value = "用户登录",notes = "用户登录",httpMethod = "POST")
     @PostMapping("login")
-    public IMOOCJSONResult login(@RequestBody UserBO userBO,HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public ResponseJSONResult login(@RequestBody UserBO userBO, HttpServletRequest request, HttpServletResponse response) throws Exception {
         String username = userBO.getUsername();
         String password = userBO.getPassword();
         //判断用户名 密码不能为空
         if(StringUtils.isBlank(username) ||StringUtils.isBlank(password)){
-            return IMOOCJSONResult.errorMsg("用户名密码不能为空");
+            return ResponseJSONResult.errorMsg("用户名密码不能为空");
         }
         Users user = usersService.queryUserForLogin(username, MD5Utils.getMD5Str(password));
         if(user == null){
-            return IMOOCJSONResult.errorMsg("用户名或密码出错");
+            return ResponseJSONResult.errorMsg("用户名或密码出错");
         }
         //设置cookie
         CookieUtils.setCookie(request,response,"user", JsonUtils.objectToJson(user),true);
         //TODO 生成用户token 存入redis会话
         //同步购物车数据
         synchShopCartData(user.getId(),request,response);
-        return IMOOCJSONResult.ok(user);
+        return ResponseJSONResult.ok(user);
     }
 
     private void synchShopCartData(String userId, HttpServletRequest request, HttpServletResponse response) {
@@ -173,14 +173,14 @@ public class UsersController extends BaseController{
 
     @ApiOperation(value = "用户退出",notes = "用户退出",httpMethod = "POST")
     @PostMapping("logout")
-    public IMOOCJSONResult logout(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public ResponseJSONResult logout(HttpServletRequest request, HttpServletResponse response) throws Exception {
        //1.清除cookie
         CookieUtils.deleteCookie(request,response,"user");
 
         //用户退出需要清空购物车 分布式会话中需要清除用户数据
         CookieUtils.deleteCookie(request,response,FOODIE_SHOPCART);
 
-        return IMOOCJSONResult.ok();
+        return ResponseJSONResult.ok();
     }
 
     public Users setNullproperty(Users users){

@@ -2,7 +2,7 @@ package com.ikgl.controller.center;
 
 import com.ikgl.pojo.Users;
 import com.ikgl.service.center.CenterUsersService;
-import com.ikgl.utils.IMOOCJSONResult;
+import com.ikgl.utils.ResponseJSONResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -23,16 +23,16 @@ public class CenterController {
 
     @ApiOperation(value = "查询用户信息",notes = "查询用户信息",httpMethod = "GET")
     @GetMapping("userInfo")
-    public IMOOCJSONResult userInfo(
+    public ResponseJSONResult userInfo(
             @ApiParam(value = "用户id",name = "userId",required = true)
             @RequestParam String userId){
         if(StringUtils.isBlank(userId)){
-            return IMOOCJSONResult.errorMsg("用户id为空");
+            return ResponseJSONResult.errorMsg("用户id为空");
         }
         Users users = centerUsersService.queryUserInfo(userId);
         if(users == null){
-            return IMOOCJSONResult.errorMsg("用户不存在");
+            return ResponseJSONResult.errorMsg("用户不存在");
         }
-        return IMOOCJSONResult.ok(users);
+        return ResponseJSONResult.ok(users);
     }
 }

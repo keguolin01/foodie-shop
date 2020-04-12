@@ -9,13 +9,12 @@ import com.ikgl.pojo.vo.MerchantOrdersVO;
 import com.ikgl.pojo.vo.OrderVO;
 import com.ikgl.service.OrderService;
 import com.ikgl.utils.CookieUtils;
-import com.ikgl.utils.IMOOCJSONResult;
+import com.ikgl.utils.ResponseJSONResult;
 import com.ikgl.utils.JsonUtils;
 import com.ikgl.utils.RedisOperator;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
-import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -48,16 +47,16 @@ public class OrdersController extends BaseController{
 
     @ApiOperation(value = "支付中心创建订单",notes = "支付中心创建订单",httpMethod = "POST")
     @PostMapping("create")
-    public IMOOCJSONResult create(@RequestBody SubmitOrderBO submitOrderBO,
-                                HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public ResponseJSONResult create(@RequestBody SubmitOrderBO submitOrderBO,
+                                     HttpServletRequest request, HttpServletResponse response) throws IOException {
         String s = JsonUtils.objectToJson(submitOrderBO);
         if(submitOrderBO.getPayMethod()!= PayMethod.WEIXIN.type &&
                 submitOrderBO.getPayMethod()!= PayMethod.ALIPAY.type){
-            return IMOOCJSONResult.errorMsg("支付方式不支持");
+            return ResponseJSONResult.errorMsg("支付方式不支持");
         }
         String shopCartJson = redisOperator.get(FOODIE_SHOPCART +":" + submitOrderBO.getUserId());
         if(StringUtils.isBlank(shopCartJson)){
-            return IMOOCJSONResult.errorMsg("购物车为空");
+            return ResponseJSONResult.errorMsg("购物车为空");
         }
         List<ShopCartBO> list = JsonUtils.jsonToList(shopCartJson,ShopCartBO.class);
         //1.创建订单
@@ -65,7 +64,7 @@ public class OrdersController extends BaseController{
         try {
             orderVO = orderService.creatOrder(list,submitOrderBO);
         } catch (Exception e) {
-           return IMOOCJSONResult.errorMsg("扣减库存出错，库存不足！");
+           return ResponseJSONResult.errorMsg("扣减库存出错，库存不足！");
         }
         MerchantOrdersVO merchantOrdersVO = orderVO.getMerchantOrdersVO();
         merchantOrdersVO.setReturnUrl(payReturnUrl);
@@ -99,12 +98,12 @@ public class OrdersController extends BaseController{
         //入参的格式
         HttpEntity<MerchantOrdersVO> httpEntity = new HttpEntity<MerchantOrdersVO>(merchantOrdersVO,headers);
         //返回的参数格式
-        ResponseEntity<IMOOCJSONResult> resultResponseEntity = restTemplate.postForEntity(paymentUrl,httpEntity,IMOOCJSONResult.class);
-        IMOOCJSONResult result = resultResponseEntity.getBody();
+        ResponseEntity<ResponseJSONResult> resultResponseEntity = restTemplate.postForEntity(paymentUrl,httpEntity, ResponseJSONResult.class);
+        ResponseJSONResult result = resultResponseEntity.getBody();
         if(result.getStatus() != 200){
-            IMOOCJSONResult.errorMsg("支付中心订单创建失败，请联系管理员！");
+            ResponseJSONResult.errorMsg("支付中心订单创建失败，请联系管理员！");
         }
-        return IMOOCJSONResult.ok(merchantOrdersVO.getMerchantOrderId());
+        return ResponseJSONResult.ok(merchantOrdersVO.getMerchantOrderId());
     }
     @ApiOperation(value = "用户支付成功后回调的地址，更新订单状态表的状态",notes = "用户支付成功后回调的地址，更新订单状态表的状态",httpMethod = "POST")
     @PostMapping("notifyMerchantOrderPaid")
@@ -116,8 +115,8 @@ public class OrdersController extends BaseController{
 
     @ApiOperation(value = "支付完成后获取订单状态表的数据",notes = "支付完成后获取订单状态表的数据",httpMethod = "POST")
     @PostMapping("getPaidOrderInfo")
-    public IMOOCJSONResult getPaidOrderInfo(String orderId){
+    public ResponseJSONResult getPaidOrderInfo(String orderId){
         OrderStatus orderStatus = orderService.queryOrderStatusInfo(orderId);
-        return IMOOCJSONResult.ok(orderStatus);
+        return ResponseJSONResult.ok(orderStatus);
     }
 }
